@@ -20,8 +20,8 @@ This audit compares the current `cad_runtime.solidworks` wrappers with common So
 | Lofted Cut | Verified | `advanced_features.loft_cut` |
 | Circular Feature Pattern | Verified | `patterns.circular_feature_pattern` |
 | Linear Feature Pattern | Verified | `patterns.linear_feature_pattern` |
-| Native Fillet | Partly verified | Used successfully in scripts, but not yet promoted to a general runtime helper |
-| Native Chamfer | Partly verified | Used successfully in scripts, but not yet promoted to a general runtime helper |
+| Native Fillet | Partly verified | `edge_features.fillet_all_current_body_edges` verified |
+| Native Chamfer | Started | `edge_features.chamfer_*` wrappers exist; reusable sample still needed |
 | Offset Plane | Verified | `references.create_offset_plane` |
 
 ### Sketch Operations
@@ -32,14 +32,16 @@ This audit compares the current `cad_runtime.solidworks` wrappers with common So
 | Circle | Verified | `sketches.draw_circle` |
 | Center rectangle | Verified | `sketches.draw_center_rectangle` |
 | Center arc | Verified | `sketches.draw_center_arc` |
-| Lines | Used in scripts | Not yet exposed as a reusable runtime helper |
-| 3-point arcs | Used in scripts | Not yet exposed as a reusable runtime helper |
+| Lines | Started | `sketch_entities.draw_line` exists; sample still needed |
+| 3-point arcs | Started | `sketch_entities.draw_3point_arc` exists; sample still needed |
+| Center rectangle | Verified | `sketch_entities.draw_center_rectangle` verified through foundation sample |
+| Polygon / ellipse / spline / text / slot | Started | Helpers exist; samples still needed |
 
 ## Important Missing Feature Wrappers
 
 ### High Priority
 
-1. `fillet.py` or `edge_features.py`
+1. `edge_features.py`
    - Native constant-radius fillet.
    - Native chamfer.
    - Edge selection by planned geometry signatures.
@@ -47,8 +49,8 @@ This audit compares the current `cad_runtime.solidworks` wrappers with common So
    - Required because many generated parts need reliable R/C edge operations.
 
 2. `holes.py`
-   - Hole Wizard / simple hole / counterbore / countersink / tapped hole.
-   - Current holes are mostly sketch circle + cut.
+   - Hole Wizard / countersink / tapped hole.
+   - Simple through holes and counterbore composition now have reusable helpers.
    - Needed for M-series bolts, clearance holes, threaded holes, ISO/GB hole descriptions.
 
 3. `references.py` expansion
@@ -58,8 +60,8 @@ This audit compares the current `cad_runtime.solidworks` wrappers with common So
    - Named mate interfaces.
    - Needed for stable assembly and mate planning.
 
-4. `views.py` / `drawings.py`
-   - Export named model views as PNG.
+4. `drawings.py` family
+   - `views.py` now exports named model views as PNG.
    - Create drawing document and insert standard views.
    - Save drawing as `SLDDRW`, `PDF`, or image.
    - Needed for automated visual inspection and dataset generation.
@@ -204,16 +206,18 @@ This is better for quick visual QA and dataset generation. Drawing views are bet
 
 ## Recommended Next Implementation Order
 
-1. Promote native fillet/chamfer into reusable runtime helpers.
-2. Add sketch entity helpers: line, centerline, 3-point arc, slot, polygon, ellipse.
-3. Add sketch relations and dimensions.
-4. Add stable datum axis and coordinate system helpers.
-5. Add 9-view export in two modules:
-   - `views.py` for PNG snapshots.
-   - `drawings.py` for `SLDDRW/PDF` drawing views.
-6. Add Hole Wizard wrappers.
-7. Add Shell, Rib, Draft, Mirror.
-8. Add Boundary Boss/Cut and curve helpers.
+1. Validate reusable chamfer and ray-based edge selection helpers.
+2. Validate sketch entity helpers: line, centerline, 3-point arc, slot, polygon, ellipse, spline, text.
+3. Validate sketch relations and dimensions.
+4. Validate stable datum axis and coordinate system helpers.
+5. Add formal drawing modules:
+   - `drawings.py`
+   - `drawing_views.py`
+   - `drawing_export.py`
+   - `drawing_annotations.py`
+6. Add Hole Wizard / tapped-hole wrappers.
+7. Validate Shell, Rib, Draft, Mirror.
+8. Validate Boundary Boss/Cut and curve helpers.
 
 ## Current Risk
 
