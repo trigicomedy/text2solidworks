@@ -12,8 +12,8 @@ def shell_selected_faces(model, name: str, thickness_mm: float, *, outward: bool
     dedicated workstation validation before being used in unattended generation.
     """
     attempts = [
-        ("InsertFeatureShell", lambda: model.FeatureManager.InsertFeatureShell(mm(thickness_mm), outward)),
-        ("InsertFeatureShell2", lambda: model.FeatureManager.InsertFeatureShell2(mm(thickness_mm), outward, null_dispatch())),
+        ("ModelDoc.InsertFeatureShell", lambda: model.InsertFeatureShell(mm(thickness_mm), outward)),
+        ("ModelDoc.InsertFeatureShell by value", lambda: model.InsertFeatureShell(mm(thickness_mm))),
     ]
     errors = []
     for label, call in attempts:

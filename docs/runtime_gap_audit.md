@@ -21,8 +21,14 @@ This audit compares the current `cad_runtime.solidworks` wrappers with common So
 | Circular Feature Pattern | Verified | `patterns.circular_feature_pattern` |
 | Linear Feature Pattern | Verified | `patterns.linear_feature_pattern` |
 | Native Fillet | Partly verified | `edge_features.fillet_all_current_body_edges` verified |
-| Native Chamfer | Started | `edge_features.chamfer_*` wrappers exist; reusable sample still needed |
+| Native Chamfer | Partly verified | `edge_features.chamfer_all_current_body_edges` verified |
+| Simple / Counterbore / Blind Holes | Partly verified | Through, counterbore composition, and blind cut verified; Hole Wizard not yet |
 | Offset Plane | Verified | `references.create_offset_plane` |
+| Datum Axis | Verified | axis from two planes and cylinder face by ray verified |
+| Mirror | Not verified | exposed COM entry exists, but tested selection/signature path returned no feature |
+| Shell | Not verified | `InsertFeatureShell` exists but rejected tested parameters |
+| Rib | Not verified | `InsertRib`/`InsertRib2` exist but tested parameters failed or returned `None` |
+| Helix / Spiral | Not verified | `InsertHelix` exists but tested parameters failed |
 
 ### Sketch Operations
 
@@ -32,10 +38,14 @@ This audit compares the current `cad_runtime.solidworks` wrappers with common So
 | Circle | Verified | `sketches.draw_circle` |
 | Center rectangle | Verified | `sketches.draw_center_rectangle` |
 | Center arc | Verified | `sketches.draw_center_arc` |
-| Lines | Started | `sketch_entities.draw_line` exists; sample still needed |
-| 3-point arcs | Started | `sketch_entities.draw_3point_arc` exists; sample still needed |
+| Lines | Verified | `sketch_entities.draw_line` |
+| Centerlines | Verified | `sketch_entities.draw_centerline` |
+| 3-point arcs | Verified | `sketch_entities.draw_3point_arc` |
 | Center rectangle | Verified | `sketch_entities.draw_center_rectangle` verified through foundation sample |
-| Polygon / ellipse / spline / text / slot | Started | Helpers exist; samples still needed |
+| Polygon / ellipse | Verified | `draw_polygon`, `draw_ellipse` |
+| Spline / text / slot | Not verified | current COM binding exposes spline/text constructors as non-callable; slot optional signature unresolved |
+| Sketch relation | Partly verified | horizontal relation verified |
+| Smart dimension | Partly verified | dimension creation verified; value-setting still needs stable setter |
 
 ## Important Missing Feature Wrappers
 
@@ -71,14 +81,20 @@ This audit compares the current `cad_runtime.solidworks` wrappers with common So
 5. Mirror feature
    - Mirror bodies/features about a plane.
    - Common for symmetric grippers, brackets, arms.
+   - Current status: wrapper exists but failed validation. Do not use in
+     unattended generation until a macro-recorded SW2025 signature is added.
 
 6. Shell
    - Native shell feature for housings and hollow parts.
    - Important for cast/CNC enclosures and lightweight parts.
+   - Current status: wrapper exists but failed validation with the current
+     Python COM argument binding.
 
 7. Rib
    - Native rib feature.
    - Useful for brackets, covers, mounting plates, housings.
+   - Current status: wrapper exists but failed validation with the current
+     Python COM argument binding.
 
 8. Draft
    - Native draft feature.
@@ -91,6 +107,7 @@ This audit compares the current `cad_runtime.solidworks` wrappers with common So
 10. Mirror / Curve / Reference Geometry helpers
    - Curves: helix/spiral, projected curve, composite curve.
    - Needed for springs, threads, pipes, cable paths, sweep paths.
+   - Current status: helix wrapper exists but failed validation.
 
 ### Lower Priority Or Specialized
 
@@ -207,16 +224,17 @@ This is better for quick visual QA and dataset generation. Drawing views are bet
 ## Recommended Next Implementation Order
 
 1. Validate reusable chamfer and ray-based edge selection helpers.
-2. Validate sketch entity helpers: line, centerline, 3-point arc, slot, polygon, ellipse, spline, text.
-3. Validate sketch relations and dimensions.
-4. Validate stable datum axis and coordinate system helpers.
+2. Resolve sketch entity gaps: slot optional signature, spline constructor, text constructor.
+3. Build stable dimension value setter and more relation samples.
+4. Validate coordinate system helper in a real named-interface sample.
 5. Add formal drawing modules:
    - `drawings.py`
    - `drawing_views.py`
    - `drawing_export.py`
    - `drawing_annotations.py`
 6. Add Hole Wizard / tapped-hole wrappers.
-7. Validate Shell, Rib, Draft, Mirror.
+7. Resolve Shell, Rib, Draft, Mirror using SW macro-recorded signatures or an
+   early-bound API layer.
 8. Validate Boundary Boss/Cut and curve helpers.
 
 ## Current Risk

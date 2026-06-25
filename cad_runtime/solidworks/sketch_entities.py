@@ -77,19 +77,25 @@ def draw_polygon(model, center_mm: Point2D, vertex_mm: Point2D, side_count: int,
 
 
 def draw_spline(model, points_mm: Iterable[Point2D]):
+    create_spline = getattr(model.SketchManager, "CreateSpline", None)
+    if not callable(create_spline):
+        raise RuntimeError("SketchManager.CreateSpline is not callable in this SW2025 COM binding.")
     coords: list[float] = []
     for x, y in points_mm:
         coords.extend([mm(x), mm(y), 0.0])
     if len(coords) < 6:
         raise ValueError("Spline requires at least two points.")
-    return model.SketchManager.CreateSpline(coords)
+    return create_spline(coords)
 
 
 def draw_text(model, text: str, origin_mm: Point2D, height_mm: float = 5.0, angle_rad: float = 0.0):
     """Create native sketch text when the COM binding exposes CreateText."""
+    create_text = getattr(model.SketchManager, "CreateText", None)
+    if not callable(create_text):
+        raise RuntimeError("SketchManager.CreateText is not callable in this SW2025 COM binding.")
     x, y = origin_mm
     try:
-        return model.SketchManager.CreateText(text, mm(x), mm(y), 0.0, mm(height_mm), angle_rad)
+        return create_text(text, mm(x), mm(y), 0.0, mm(height_mm), angle_rad)
     except Exception as exc:
         raise RuntimeError(f"Sketch text creation is not available with this COM signature: {exc}") from exc
 

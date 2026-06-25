@@ -10,8 +10,8 @@ def rib_from_selected_sketch(model, name: str, thickness_mm: float, *, flip: boo
     This is an initial wrapper and should be validated before production use.
     """
     attempts = [
-        ("InsertRib", lambda: model.FeatureManager.InsertRib(mm(thickness_mm), flip, False, 0, 0, False)),
-        ("FeatureRib", lambda: model.FeatureManager.FeatureRib(mm(thickness_mm), flip, False, 0, 0, False)),
+        ("ModelDoc.InsertRib 6-arg", lambda: model.InsertRib(mm(thickness_mm), flip, False, 0, 0, False)),
+        ("FeatureManager.InsertRib 6-arg", lambda: model.FeatureManager.InsertRib(mm(thickness_mm), flip, False, 0, 0, False)),
     ]
     errors = []
     for label, call in attempts:

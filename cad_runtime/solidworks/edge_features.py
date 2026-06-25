@@ -98,3 +98,28 @@ def fillet_all_current_body_edges(model, name: str, radius_mm: float):
     if selected == 0:
         raise RuntimeError(f"No body edges selected for fillet: {name}")
     return fillet_selected_edges(model, name, radius_mm)
+
+
+def chamfer_all_current_body_edges(model, name: str, size_mm: float):
+    bodies = model.GetBodies2(0, True) or []
+    if len(bodies) != 1:
+        raise RuntimeError(f"Expected one solid body for all-edge chamfer, got {len(bodies)}")
+    edges = bodies[0].GetEdges() or []
+    if not edges:
+        raise RuntimeError(f"No body edges found for chamfer: {name}")
+    clear_selection(model)
+    selected = 0
+    for edge in edges:
+        append = selected > 0
+        try:
+            if edge.Select4(append, null_dispatch()):
+                selected += 1
+        except Exception:
+            try:
+                if edge.Select4(append, None):
+                    selected += 1
+            except Exception:
+                continue
+    if selected == 0:
+        raise RuntimeError(f"No body edges selected for chamfer: {name}")
+    return chamfer_selected_edges(model, name, size_mm)
