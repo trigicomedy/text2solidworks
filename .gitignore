@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local staging and generated artifacts
+.codex_staging/
+logs/
+exports/
+previews/
+
+# SolidWorks generated binary outputs
+*.SLDPRT
+*.SLDASM
+*.SLDDRW
+*.STEP
+*.STP
+*.x_t
+*.x_b
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment
+.env
+.venv/
+venv/
