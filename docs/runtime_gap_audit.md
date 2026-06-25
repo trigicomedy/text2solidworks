@@ -25,7 +25,7 @@ This audit compares the current `cad_runtime.solidworks` wrappers with common So
 | Simple / Counterbore / Blind Holes | Partly verified | Through, counterbore composition, and blind cut verified; Hole Wizard not yet |
 | Offset Plane | Verified | `references.create_offset_plane` |
 | Datum Axis | Verified | axis from two planes and cylinder face by ray verified |
-| Mirror | Not verified | exposed COM entry exists, but tested selection/signature path returned no feature |
+| Mirror | Verified | simple feature mirror verified through `ModelDoc.InsertMirrorFeature` and multiple selection strategies |
 | Shell | Not verified | `InsertFeatureShell` exists but rejected tested parameters |
 | Rib | Not verified | `InsertRib`/`InsertRib2` exist but tested parameters failed or returned `None` |
 | Helix / Spiral | Not verified | `InsertHelix` exists but tested parameters failed |
@@ -81,8 +81,8 @@ This audit compares the current `cad_runtime.solidworks` wrappers with common So
 5. Mirror feature
    - Mirror bodies/features about a plane.
    - Common for symmetric grippers, brackets, arms.
-   - Current status: wrapper exists but failed validation. Do not use in
-     unattended generation until a macro-recorded SW2025 signature is added.
+   - Current status: simple feature mirror verified. Body/surface mirror still
+     needs separate validation.
 
 6. Shell
    - Native shell feature for housings and hollow parts.

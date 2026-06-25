@@ -195,14 +195,20 @@ Current helpers:
 
 - `mirror_feature`
 
-Status: started, not verified.
+Status: verified for simple feature mirror.
 
 Validation result:
 
-- `debug_unverified_features.py --only mirror` created the seed boss, but native
-  mirror returned no feature through the tried `InsertMirrorFeature` selection
-  path. Keep this wrapper out of production generation until a macro-recorded
-  signature is added.
+- `debug_unverified_features.py --only mirror` created the seed boss and native
+  mirror feature successfully after adding the SW2025 `ModelDoc.InsertMirrorFeature`
+  path and multiple selection strategies.
+
+Implementation note:
+
+- The legacy `ModelDoc.InsertMirrorFeature(GeometryPattern)` entry can return a
+  Boolean success value instead of an `IFeature` object. The wrapper treats
+  Boolean `True` as success and best-effort renames the latest feature only when
+  a feature object can be retrieved.
 
 ### `thin_wall_features.py`
 
