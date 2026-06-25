@@ -10,6 +10,12 @@ from .advanced_features import (
     sweep_boss,
     sweep_cut,
 )
+from .views import (
+    export_model_nine_view_images,
+    export_named_view_image,
+    export_named_view_images,
+    show_named_view,
+)
 
 __all__ = [
     "connect_solidworks",
@@ -20,4 +26,8 @@ __all__ = [
     "sweep_cut",
     "loft_boss",
     "loft_cut",
+    "show_named_view",
+    "export_named_view_image",
+    "export_named_view_images",
+    "export_model_nine_view_images",
 ]
