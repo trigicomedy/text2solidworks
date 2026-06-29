@@ -23,7 +23,6 @@ from cad_runtime.solidworks import (
     save_assembly,
     summarize_assembly,
 )
-from cad_runtime.solidworks.assembly_mates import add_mate_from_current_selection
 from cad_runtime.solidworks.document import new_part, save_as
 from cad_runtime.solidworks.features import extrude_boss, rebuild_model
 from cad_runtime.solidworks.references import create_axis_from_cylindrical_face_by_ray, create_offset_plane
@@ -139,11 +138,12 @@ def build_validation_assembly(sw, part_a: Path, part_b: Path) -> Path:
 
     plane_a = AssemblyRef(comp_a_name, "plane", "MATE_PLANE")
     plane_b = AssemblyRef(comp_b_name, "plane", "MATE_PLANE")
+    axis_a = AssemblyRef(comp_a_name, "axis", "MATE_AXIS")
+    axis_b = AssemblyRef(comp_b_name, "axis", "MATE_AXIS")
     mate1 = mate_coincident(asm, "MATE_PLANE_COINCIDENT", plane_a, plane_b)
     log(f"Created coincident mate via {mate1.api}, status={mate1.status}")
-    select_cylindrical_faces_by_ray(asm)
-    mate2 = add_mate_from_current_selection(asm, "MATE_AXIS_CONCENTRIC", "concentric")
-    log(f"Created concentric mate via {mate2.api}, status={mate2.status}")
+    mate2 = mate_coincident(asm, "MATE_AXIS_COINCIDENT", axis_a, axis_b)
+    log(f"Created axis-coincident mate via {mate2.api}, status={mate2.status}")
 
     try:
         asm.ViewZoomtofit2()
@@ -170,30 +170,6 @@ def build_validation_assembly(sw, part_a: Path, part_b: Path) -> Path:
     log(f"Saved assembly: {path}")
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return path
-
-
-def select_cylindrical_faces_by_ray(asm) -> None:
-    asm.ClearSelection2(True)
-    first = asm.Extension.SelectByRay(
-        mm(20), 0.0, mm(10),
-        -1, 0, 0,
-        mm(5),
-        2,
-        False,
-        0,
-        0,
-    )
-    second = asm.Extension.SelectByRay(
-        mm(96), 0.0, mm(15),
-        -1, 0, 0,
-        mm(5),
-        2,
-        True,
-        0,
-        0,
-    )
-    if not first or not second:
-        raise RuntimeError(f"Failed to select cylindrical faces by ray: first={first}, second={second}")
 
 
 def main() -> int:

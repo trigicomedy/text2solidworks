@@ -151,8 +151,9 @@ Validated on 2026-06-29:
 - inserted both parts into a new assembly;
 - selected component datum planes using `AssemblyRef`;
 - created a coincident plane mate through `AddMate5`;
-- selected two cylindrical faces in the assembly by ray;
-- created a concentric mate from the current selection through `AddMate5`;
+- created named datum axes from cylindrical faces;
+- selected component datum axes using `AssemblyRef`;
+- created an axis-coincident mate through `AddMate5` to express coaxial alignment;
 - saved the resulting `SLDASM`;
 - wrote validation JSON to
   `D:\text2solidworks_workspace\debug\assembly_foundation\assembly_foundation_result.json`.
@@ -162,8 +163,9 @@ Current module status:
 - `assembly_documents.py`: minimally verified by creating and saving an assembly.
 - `assembly_components.py`: minimally verified by inserting two part files.
 - `assembly_references.py`: minimally verified for named datum plane references.
-- `assembly_mates.py`: minimally verified for coincident mate from references and
-  concentric mate from current selection.
+- `assembly_mates.py`: minimally verified for plane coincident mate and
+  datum-axis coincident mate from named references. `add_mate_from_current_selection`
+  remains available for ray-selected cylindrical faces.
 - `assembly_validation.py`: component summary verified; mate count remains
   best-effort and returned `None` in the first validation run.
 
@@ -180,11 +182,17 @@ Important limitation found:
   binding, so naming cylindrical faces directly did not work in the validation
   script. For now, use datum references where possible, or select faces by
   geometric rays before calling `add_mate_from_current_selection`.
+- Macro recording showed that reliable datum-axis feature renaming should use
+  `model.SelectedFeatureProperties(..., FeatureName)` after selecting the
+  feature. Direct `feature.Name = ...` can appear to succeed while the saved
+  feature keeps the generated Chinese name.
+- For coaxial assembly constraints:
+  - use `concentric` mate for cylindrical/conical faces;
+  - use `coincident` mate for two datum axes.
 
 Next validation targets:
 
-1. validate named axis references in assemblies;
-2. validate distance and angle mates;
-3. validate component fixed/floating operations;
-4. validate mate counting and mate tree traversal;
-5. investigate stable face naming alternatives for SolidWorks Python COM.
+1. validate distance and angle mates;
+2. validate component fixed/floating operations;
+3. validate mate counting and mate tree traversal;
+4. investigate stable face naming alternatives for SolidWorks Python COM.

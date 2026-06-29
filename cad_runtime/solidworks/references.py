@@ -28,6 +28,8 @@ def create_axis_from_two_planes(model, name: str, plane_a: str, plane_b: str):
     # naming must be handled by a later feature-tree helper.
     try:
         result.Name = name
+        if _feature_value(result, "Name") != name:
+            _rename_latest_feature_by_type(model, "RefAxis", name)
     except Exception:
         _rename_latest_feature_by_type(model, "RefAxis", name)
     rebuild_model(model)
@@ -59,6 +61,8 @@ def create_axis_from_cylindrical_face_by_ray(
         raise RuntimeError(f"Failed to create datum axis from cylindrical face: {name}")
     try:
         result.Name = name
+        if _feature_value(result, "Name") != name:
+            _rename_latest_feature_by_type(model, "RefAxis", name)
     except Exception:
         _rename_latest_feature_by_type(model, "RefAxis", name)
     rebuild_model(model)
@@ -83,7 +87,14 @@ def _rename_latest_feature_by_type(model, type_name: str, name: str) -> bool:
         if _feature_value(feature, "GetTypeName2") == type_name:
             try:
                 feature.Name = name
-                return True
+                if _feature_value(feature, "Name") == name:
+                    return True
+            except Exception:
+                pass
+            try:
+                if feature.Select2(False, 0):
+                    result = bool(model.SelectedFeatureProperties(0, 0, 0, 0, 0, 0, 0, True, False, name))
+                    return result and _feature_value(feature, "Name") == name
             except Exception:
                 return False
     return False
