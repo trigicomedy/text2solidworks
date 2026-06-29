@@ -18,6 +18,7 @@ from .views import (
 )
 from .assembly_components import add_component, get_component, list_components
 from .assembly_documents import new_assembly, open_assembly, save_assembly
+from .assembly_joints import create_revolute_joint
 from .assembly_mates import (
     add_mate_from_current_selection,
     mate_angle,
@@ -27,7 +28,15 @@ from .assembly_mates import (
     mate_parallel,
 )
 from .assembly_references import AssemblyRef
-from .assembly_validation import summarize_assembly
+from .assembly_subassemblies import create_subassembly, insert_subassembly
+from .assembly_transforms import (
+    fix_component_in_assembly,
+    float_component_in_assembly,
+    move_component,
+    rotate_component,
+    set_component_transform,
+)
+from .assembly_validation import check_interference, summarize_assembly
 
 __all__ = [
     "connect_solidworks",
@@ -55,5 +64,14 @@ __all__ = [
     "mate_distance",
     "mate_angle",
     "mate_parallel",
+    "set_component_transform",
+    "move_component",
+    "rotate_component",
+    "fix_component_in_assembly",
+    "float_component_in_assembly",
+    "create_revolute_joint",
+    "create_subassembly",
+    "insert_subassembly",
+    "check_interference",
     "summarize_assembly",
 ]

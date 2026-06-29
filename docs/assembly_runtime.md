@@ -192,7 +192,47 @@ Important limitation found:
 
 Next validation targets:
 
-1. validate distance and angle mates;
-2. validate component fixed/floating operations;
-3. validate mate counting and mate tree traversal;
+Additional core assembly validation:
+
+```powershell
+cd D:\text2solidworks
+python workspace_scripts\debug_assembly_core_features.py
+```
+
+Verified output folder:
+
+```text
+D:\text2solidworks_workspace\debug\assembly_core_features
+```
+
+Validated after the foundation run:
+
+- initial component placement through `add_component(..., xyz_mm=...)`;
+- selected-component `FixComponent` and `UnfixComponent` commands;
+- distance mate through `AddMate5`;
+- parallel mate through `AddMate5`;
+- angle mate through `AddMate5`;
+- basic `create_revolute_joint(...)` wrapper using named datum axes and optional
+  plane mate;
+- creating and inserting a simple subassembly;
+- component summary through `summarize_assembly(...)`;
+- native interference-check entry point through `ToolsCheckInterference`.
+
+Known limitations from this run:
+
+- Moving or rotating an already inserted component through `Transform2.SetData`
+  currently fails with COM `类型不匹配`. Initial insertion placement works, but
+  post-insertion `set_component_transform(...)`, `move_component(...)`, and
+  principal-axis `rotate_component(...)` need a macro-recorded SW2025 signature.
+- `summarize_assembly(...).mate_count` still returns `None` because mate tree
+  traversal/counting is not yet stable in the current dynamic COM binding.
+- `check_interference(...)` can call the native command, but the current wrapper
+  only records the raw result; extracting interference pair/count data still
+  needs signature validation.
+
+Next validation targets:
+
+1. record a macro for moving/rotating an inserted component;
+2. record or inspect mate tree traversal for reliable mate counting;
+3. record an interference-check macro that returns/counts interference pairs;
 4. investigate stable face naming alternatives for SolidWorks Python COM.

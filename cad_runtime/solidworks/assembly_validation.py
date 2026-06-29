@@ -35,7 +35,9 @@ def count_mates(assembly) -> int | None:
         count = 0
         while feature is not None:
             try:
-                if "Mate" in str(feature.GetTypeName2()):
+                type_attr = getattr(feature, "GetTypeName2", None)
+                type_name = type_attr() if callable(type_attr) else type_attr
+                if "Mate" in str(type_name):
                     count += 1
             except Exception:
                 pass
@@ -55,3 +57,24 @@ def assert_components_present(assembly, names: list[str]) -> None:
 def check_interference_placeholder(assembly):
     """Reserved entry point for future native interference checks."""
     raise NotImplementedError("Native interference checking needs dedicated SW2025 COM validation.")
+
+
+def check_interference(assembly, components: list | None = None, *, coincident_interference: bool = True):
+    """Best-effort native interference check.
+
+    Returns the raw SolidWorks result. The exact result shape depends on COM
+    binding and needs per-workstation validation.
+    """
+    if components is None:
+        components = list_components(assembly, top_level_only=True)
+    attempts = [
+        ("ToolsCheckInterference2", lambda: assembly.ToolsCheckInterference2(len(components), components, coincident_interference)),
+        ("ToolsCheckInterference", lambda: assembly.ToolsCheckInterference()),
+    ]
+    errors: list[str] = []
+    for label, call in attempts:
+        try:
+            return {"api": label, "result": call()}
+        except Exception as exc:
+            errors.append(f"{label}: {exc}")
+    raise RuntimeError(f"Interference check failed. Attempts: {'; '.join(errors)}")
