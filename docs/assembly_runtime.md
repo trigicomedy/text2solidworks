@@ -84,6 +84,7 @@ Responsibilities:
 Primary functions:
 
 ```python
+add_mate_from_current_selection(assembly, name, mate_type)
 mate_coincident(assembly, name, ref_a, ref_b)
 mate_concentric(assembly, name, ref_a, ref_b)
 mate_parallel(assembly, name, ref_a, ref_b)
@@ -131,13 +132,40 @@ Runtime maps this to:
 
 ## Current Validation Status
 
-Implemented but not yet fully sample-validated as standalone modules:
+Standalone validation script:
 
-- `assembly_documents.py`
-- `assembly_components.py`
-- `assembly_references.py`
-- `assembly_mates.py`
-- `assembly_validation.py`
+```powershell
+cd D:\text2solidworks
+python workspace_scripts\debug_assembly_foundation.py
+```
+
+Verified output:
+
+```text
+D:\text2solidworks_workspace\debug\assembly_foundation\exports\assembly_foundation_validation.SLDASM
+```
+
+Validated on 2026-06-29:
+
+- generated two simple cylindrical part files;
+- inserted both parts into a new assembly;
+- selected component datum planes using `AssemblyRef`;
+- created a coincident plane mate through `AddMate5`;
+- selected two cylindrical faces in the assembly by ray;
+- created a concentric mate from the current selection through `AddMate5`;
+- saved the resulting `SLDASM`;
+- wrote validation JSON to
+  `D:\text2solidworks_workspace\debug\assembly_foundation\assembly_foundation_result.json`.
+
+Current module status:
+
+- `assembly_documents.py`: minimally verified by creating and saving an assembly.
+- `assembly_components.py`: minimally verified by inserting two part files.
+- `assembly_references.py`: minimally verified for named datum plane references.
+- `assembly_mates.py`: minimally verified for coincident mate from references and
+  concentric mate from current selection.
+- `assembly_validation.py`: component summary verified; mate count remains
+  best-effort and returned `None` in the first validation run.
 
 The implementation is based on previously successful code in
 `examples/create_6dof_robot_arm.py`, especially:
@@ -146,10 +174,17 @@ The implementation is based on previously successful code in
 - component reference selection using `ref@Component@AssemblyTitle`;
 - AddMate5/AddMate3/AddMate2 fallback creation.
 
-Next validation target:
+Important limitation found:
 
-1. create two simple block parts with named planes/axes;
-2. insert both into a new assembly;
-3. create one coincident plane mate and one concentric axis mate;
-4. save the resulting SLDASM;
-5. record successful API signatures in this document.
+- `model.Extension.SetEntityName` is not exposed by the current Python COM
+  binding, so naming cylindrical faces directly did not work in the validation
+  script. For now, use datum references where possible, or select faces by
+  geometric rays before calling `add_mate_from_current_selection`.
+
+Next validation targets:
+
+1. validate named axis references in assemblies;
+2. validate distance and angle mates;
+3. validate component fixed/floating operations;
+4. validate mate counting and mate tree traversal;
+5. investigate stable face naming alternatives for SolidWorks Python COM.

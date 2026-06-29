@@ -19,6 +19,7 @@ from .views import (
 from .assembly_components import add_component, get_component, list_components
 from .assembly_documents import new_assembly, open_assembly, save_assembly
 from .assembly_mates import (
+    add_mate_from_current_selection,
     mate_angle,
     mate_coincident,
     mate_concentric,
@@ -48,6 +49,7 @@ __all__ = [
     "get_component",
     "list_components",
     "AssemblyRef",
+    "add_mate_from_current_selection",
     "mate_coincident",
     "mate_concentric",
     "mate_distance",

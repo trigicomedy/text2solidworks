@@ -29,7 +29,7 @@ def create_axis_from_two_planes(model, name: str, plane_a: str, plane_b: str):
     try:
         result.Name = name
     except Exception:
-        pass
+        _rename_latest_feature_by_type(model, "RefAxis", name)
     rebuild_model(model)
     return name
 
@@ -60,9 +60,33 @@ def create_axis_from_cylindrical_face_by_ray(
     try:
         result.Name = name
     except Exception:
-        pass
+        _rename_latest_feature_by_type(model, "RefAxis", name)
     rebuild_model(model)
     return name
+
+
+def _feature_value(feature, attr: str):
+    value = getattr(feature, attr, None)
+    try:
+        return value() if callable(value) else value
+    except Exception:
+        return None
+
+
+def _rename_latest_feature_by_type(model, type_name: str, name: str) -> bool:
+    """Best-effort rename for COM calls that return bool instead of IFeature."""
+    try:
+        features = list(model.FeatureManager.GetFeatures(False) or [])
+    except Exception:
+        return False
+    for feature in reversed(features):
+        if _feature_value(feature, "GetTypeName2") == type_name:
+            try:
+                feature.Name = name
+                return True
+            except Exception:
+                return False
+    return False
 
 
 def create_coordinate_system_from_selection(model, name: str):

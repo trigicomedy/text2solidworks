@@ -117,6 +117,67 @@ def add_mate(
     raise RuntimeError(f"Failed to create mate {name} ({mate_type}). Attempts: {'; '.join(errors)}")
 
 
+def add_mate_from_current_selection(
+    assembly,
+    name: str,
+    mate_type: str,
+    *,
+    distance_mm: float = 0.0,
+    angle_deg: float = 0.0,
+    alignment: str = "aligned",
+):
+    """Create a mate from the current SolidWorks selection set."""
+    mate_code = MATE_TYPES[mate_type]
+    align_code = ALIGNMENTS[alignment]
+    distance = mm(distance_mm)
+    angle = angle_deg * 3.141592653589793 / 180.0
+    errors: list[str] = []
+    attempts = [
+        ("AddMate5", lambda status: assembly.AddMate5(
+            mate_code, align_code, False,
+            distance, distance, distance,
+            angle, angle,
+            0.0, 0.0, 0.0,
+            False, False,
+            0,
+            status,
+        )),
+        ("AddMate3", lambda status: assembly.AddMate3(
+            mate_code, align_code, False,
+            distance, distance, distance,
+            angle, angle,
+            0.0, 0.0, 0.0,
+            False,
+            status,
+        )),
+        ("AddMate2", lambda status: assembly.AddMate2(
+            mate_code, align_code, False,
+            distance, distance, distance,
+            angle, angle,
+            0.0, 0.0, 0.0,
+            False,
+            status,
+        )),
+    ]
+    try:
+        for api_name, call in attempts:
+            status = _byref_i4(0)
+            try:
+                mate = call(status)
+                if mate is not None:
+                    try:
+                        mate.Name = name
+                    except Exception:
+                        pass
+                    return MateResult(name, mate_type, api_name, getattr(status, "value", None), mate)
+                errors.append(f"{api_name}: mate=None status={getattr(status, 'value', None)}")
+            except Exception as exc:
+                errors.append(f"{api_name}: {exc}")
+    finally:
+        clear_selection(assembly)
+    raise RuntimeError(f"Failed to create mate {name} ({mate_type}) from current selection. Attempts: {'; '.join(errors)}")
+
+
 def _byref_i4(value: int = 0):
     import pythoncom
     import win32com.client

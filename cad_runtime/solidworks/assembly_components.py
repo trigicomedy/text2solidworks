@@ -85,6 +85,12 @@ def component_name(component) -> str:
 def list_components(assembly, *, top_level_only: bool = True) -> list:
     """List components in an assembly."""
     try:
+        components = assembly.GetComponents(not top_level_only)
+        if components:
+            return list(components)
+    except Exception:
+        pass
+    try:
         config = assembly.GetActiveConfiguration()
         root = config.GetRootComponent3(True)
         children = root.GetChildren() or []
@@ -106,6 +112,15 @@ def list_components(assembly, *, top_level_only: bool = True) -> list:
 
 def get_component(assembly, name: str):
     """Find a component by exact Name2 or by base instance prefix."""
+    method = getattr(assembly, "GetComponentByName", None)
+    if callable(method):
+        for candidate in (name, f"{name}-1"):
+            try:
+                comp = method(candidate)
+                if comp is not None:
+                    return comp
+            except Exception:
+                pass
     for comp in list_components(assembly, top_level_only=False):
         comp_name = component_name(comp)
         if comp_name == name or comp_name.split("-")[0] == name:
