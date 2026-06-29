@@ -110,6 +110,103 @@ assert_components_present(assembly, names)
 check_interference_placeholder(assembly)
 ```
 
+### `assembly_transforms.py`
+
+Responsibilities:
+
+- set the initial component placement strategy;
+- expose post-insertion move/rotate entry points;
+- fix or float a selected component through assembly commands.
+
+Primary functions:
+
+```python
+set_component_transform(sw_app, component, xyz_mm, rpy_deg=(0, 0, 0))
+move_component(sw_app, component, xyz_mm)
+rotate_component(sw_app, component, axis, angle_deg)
+fix_component_in_assembly(assembly, component)
+float_component_in_assembly(assembly, component)
+```
+
+Important distinction:
+
+- Initial placement means passing `xyz_mm` while inserting the component:
+  `add_component(sw, asm, part_path, xyz_mm=(100, 0, 50))`.
+- Post-insertion movement means selecting or referencing a component that is
+  already inside the assembly and moving/rotating it afterward.
+
+For robot-arm generation, initial placement plus mates is the preferred path.
+Post-insertion movement is useful for debugging, visual staging, exploded-view
+preparation, temporary pose adjustment, and future motion/animation work.
+
+Current status:
+
+- Initial placement through `add_component(..., xyz_mm=...)` is verified.
+- `FixComponent` and `UnfixComponent` are verified through selected components.
+- Post-insertion `set_component_transform(...)`, `move_component(...)`, and
+  `rotate_component(...)` are implemented as provisional wrappers but are not
+  verified; `Transform2.SetData(...)` currently rejects the Python argument
+  shape in this SW2025 COM binding.
+
+Macro request for this gap:
+
+1. create/open an assembly;
+2. insert one simple component;
+3. select the inserted component;
+4. use SolidWorks `Move Component` to translate it, for example +50 mm in X;
+5. use SolidWorks `Rotate Component` to rotate it, for example 30 degrees about Z;
+6. stop recording and provide the `.swp`.
+
+The goal is to discover whether SW2025 records this as `Transform2`,
+`SetTransformAndSolve2`, `TranslateComponent`, `RotateComponent`, `DragOperator`,
+or another command path.
+
+### `assembly_joints.py`
+
+Responsibilities:
+
+- expose higher-level robot joint helpers;
+- create a basic revolute joint from named datum axes and optional plane mates;
+- carry planned motion limits in structured return data.
+
+Primary function:
+
+```python
+create_revolute_joint(
+    assembly,
+    name,
+    axis_a,
+    axis_b,
+    plane_a=None,
+    plane_b=None,
+    limit_deg=None,
+)
+```
+
+Current status:
+
+- Basic revolute joint creation is verified.
+- Native SolidWorks limit-angle mate creation is not yet verified. The
+  `limit_deg` value is currently recorded in the Python result/plan layer.
+
+### `assembly_subassemblies.py`
+
+Responsibilities:
+
+- create simple subassemblies;
+- insert subassemblies into a top-level assembly.
+
+Primary functions:
+
+```python
+create_subassembly(sw_app, path, component_specs)
+insert_subassembly(sw_app, assembly, subassembly_path, name=None, xyz_mm=(0, 0, 0))
+```
+
+Current status:
+
+- Creating and inserting a simple subassembly is verified.
+
 ## Planned Skill Output Shape
 
 The design/connection skill should prefer semantic references, not raw
@@ -128,7 +225,12 @@ Runtime maps this to:
 
 1. `AssemblyRef(...)`
 2. `select_component_reference(...)`
-3. `mate_concentric(...)`
+3. `mate_*` wrapper
+
+For coaxial constraints, the skill should distinguish reference type:
+
+- cylindrical or conical faces: use `mate_concentric(...)`;
+- datum axes: use `mate_coincident(...)`.
 
 ## Current Validation Status
 
